@@ -2,7 +2,6 @@
 
 
 
-
 /*    Author: lab
  *  Partner(s) Name:
  *    Lab Section:
@@ -189,14 +188,15 @@ void A2D_init() {
     ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
 }
 
-
+             
 int main(void) {
-    /* Insert DDR and PORT initializations */
-    
+    DDRA = 0x00; PORTA = 0x0F;
     DDRC = 0xFF; PORTC = 0x00;
     DDRD = 0xFF; PORTD = 0x00;
-    DDRA = 0x00; PORTA = 0x0F;
 
+    unsigned long timer = 500;
+    unsigned long Falling_Object_timer = 1500;
+    
     set_row = 0xFE;
     set_pattern = 0x80;
     Joystick_State = Joystick_Start;
@@ -206,20 +206,24 @@ int main(void) {
 
     int state = 0;
 
-    TimerSet(750);
+    TimerSet(timer);
     TimerOn();
     A2D_init();
 
     /* Insert your solution below */
     while (1) {
         x = ADC;
-    	state = Falling_Object(state);
-	Joystick();
-    
+        if(Falling_Object_timer >= 1500){
+            state = Falling_Object(state);
+            Falling_Object_timer = 0;
+        }
+        Joystick();
+
         while(!TimerFlag);
         TimerFlag = 0;
+        Falling_Object_timer += timer;
     }
-    return 1; 
+    return 1;
+    
 }
-
 
