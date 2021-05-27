@@ -200,13 +200,14 @@ int main(void) {
     DDRC = 0xFF; PORTC = 0x00;
     DDRD = 0xFF; PORTD = 0x00;
 
-    unsigned long timer = 500;
+    unsigned long timer = 1;
     unsigned long Falling_Object_timer = 1500;
     
     set_row = 0xFE;
     set_pattern = 0xE0;
+    
     Joystick_State = Joystick_Start;
-
+    unsigned long Joystick_timer = 400;
 
     //static unsigned short x;
 
@@ -219,15 +220,18 @@ int main(void) {
     /* Insert your solution below */
     while (1) {
         x = ADC;
-        /*if(Falling_Object_timer >= 1500){
+        if(Falling_Object_timer >= 1500){
             state = Falling_Object(state);
             Falling_Object_timer = 0;
-        }*/
-        Joystick();
-
+        }
+        if(Joystick_timer >= 400){
+	    Joystick();
+	    Joystick_timer = 0;
+	}
         while(!TimerFlag);
         TimerFlag = 0;
         Falling_Object_timer += timer;
+        Joystick_timer += timer;
     }
     return 1;
     
