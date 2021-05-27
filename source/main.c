@@ -1,13 +1,13 @@
 
 
-/*	Author: lab
- *  Partner(s) Name: 
- *	Lab Section:
- *	Assignment: Lab #  Exercise #
- *	Exercise Description: [optional - include for your own benefit]
- *  Demo: https://www.youtube.com/watch?v=g8l0eq3pEpA
- *	I acknowledge all content contained herein, excluding template or example
- *	code, is my own original work.
+/*    Author: lab
+ *  Partner(s) Name:
+ *    Lab Section:
+ *    Assignment: Lab #  Exercise #
+ *    Exercise Description: [optional - include for your own benefit]
+ *
+ *    I acknowledge all content contained herein, excluding template or example
+ *    code, is my own original work.
  */
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -16,9 +16,8 @@
 #endif
 
 
-
-// Clock Timer (ms) 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programme$
+
 // Internal variables for mapping AVR's ISR to our cleaner TimerISR model.
 unsigned long _avr_timer_M = 1; // Start counter from here to 0. Default 1ms
 unsigned long _avr_timer_cntcurr = 0; // Current internal clock of 1ms ticks
@@ -45,7 +44,7 @@ void TimerOn(){
     _avr_timer_cntcurr = _avr_timer_M;
 
     // enable global interrupts
-    SREG |= 0x80;       // 1000 0000 
+    SREG |= 0x80;       // 1000 0000
 }
 
 void TimerOff(){
@@ -79,103 +78,100 @@ unsigned char btn;
 unsigned short x;
 
 
-
-// Displays our paddle on row 1 for the LED Matrix.
-// Paddle is used to catch dropping targets
-enum Demo_States {shift};
-int Demo_Tick(int state) {
+enum Falling_States {shift};
+int Falling_Object(int state) {
 
     // Local Variables
-    static unsigned char pattern = 0xE0;        // LED pattern - 0: LED off; 1: LED on
-    static unsigned char row = 0xFE;    // Row(s) displaying pattern. 
+    static unsigned char pattern = 0x02;        // LED pattern - 0: LED off; 1: LED on
+    static unsigned char row = 0xFE;    // Row(s) displaying pattern.
                                                         // 0: display pattern on row   $
     // Transitions
     switch (state) {
-        case shift:     
+        case shift:
             break;
-        default:        
+        default:
             state = shift;
             break;
-    }   
+    }
     // Actions
     switch (state) {
-        case shift:     
-            //pattern = set_pattern;
-            if (pattern == 0x07 && button == 3){
-                pattern = 0x07;
-            } else if (pattern != 0x07 && button == 3){
-                pattern = set_pattern;
-            } else if (pattern == 0xE0 && button == 4){
-                pattern = 0xE0;
-            } else if (pattern != 0xE0 && button == 4){
-                pattern = set_pattern;
-            } 
+        case shift:
+	    // if row != last row, go to next row
+            if (row != 0xEF){
+                row = ~row;
+                row = row << 1;
+                row = ~row;
+            } else {
+                row = 0xFE;
+            }
             break;
 
         default:
             break;
     }
     PORTC = pattern;    // Pattern to display
-    PORTD = row;                // Row(s) displaying pattern    
+    PORTD = row;                // Row(s) displaying pattern
     return state;
 
 }
 
-//unsigned char set_row;
-enum Change_States {Change_Start, Change_Wait, Change_Decrement, Change_Increment, Change_Right, Change_Left} Change_State;
 
-void Calculate(){
+
+
+//unsigned char set_row;
+enum Joystick_States {Joystick_Start, Joystick_Wait, Joystick_Right, Joystick_Left} Joystick_State;
+
+void Joystick(){
 
     //x = ADC;
     // Transition
-    switch(Change_State){
-        case Change_Start:
-            Change_State = Change_Wait;
+    switch(Joystick_State){
+        case Joystick_Start:
+            Joystick_State = Joystick_Wait;
             button = 0;
             break;
-        case Change_Wait:
+        case Joystick_Wait:
             if(x > 512 && x < 600){
                 button = 0;
-                Change_State = Change_Wait;
+                Joystick_State = Joystick_Wait;
             }
-	    else if(x > 512){
-                Change_State = Change_Right;
+ 
+        else if(x > 600){
+                Joystick_State = Joystick_Right;
                 button = 3;
             } else if(x < 512){
-                Change_State = Change_Left;
+                Joystick_State = Joystick_Left;
                 button = 4;
             }
             break;
 
-
-        case Change_Right:
-            Change_State = Change_Wait;
-            break;
-
-        case Change_Left:
-            Change_State = Change_Wait;
+	// if left or right
+        case Joystick_Right:
+	    Joystick_State = Joystick_Wait;
+	    break;
+        case Joystick_Left:
+            Joystick_State = Joystick_Wait;
             break;
 
         default:
-            Change_State = Change_Wait;
+            Joystick_State = Joystick_Wait;
             break;
     }
 
     // Action
-    switch(Change_State){
-        case Change_Wait:
-            break;
-        case Change_Right:
-            if(set_pattern == 0x07 && button == 3)
-		set_pattern = 0x07;
-	    else if(set_pattern != 0x07 && button == 3)
+    switch(Joystick_State){
+        // Shift column to the right
+        case Joystick_Right:
+            if(set_pattern == 0x01 && button == 3)
+        	set_pattern = 0x80;
+        else if(set_pattern != 0x01 && button == 3)
                 set_pattern = (set_pattern >> 1);
             break;
         // Shift column to the left
-        case Change_Left:
-            if (set_pattern == 0xE0 && button == 4)
-		set_pattern = 0xE0;
-	    else if(set_pattern != 0xE0 && button == 4)
+        case Joystick_Left:
+            if (set_pattern == 0x80 && button == 4)
+        	set_pattern = 0x01;
+        else if(set_pattern != 0x80 && button == 4)
                 set_pattern = (set_pattern << 1);
             break;
 
@@ -197,28 +193,28 @@ int main(void) {
     DDRA = 0x00; PORTA = 0x0F;
 
     set_row = 0xFE;
-    set_pattern = 0xE0;
-    Change_State = Change_Start;
+    set_pattern = 0x80;
+    Joystick_State = Joystick_Start;
+
 
     //static unsigned short x;
 
     int state = 0;
-    TimerSet(100);
+
+    TimerSet(500);
     TimerOn();
     A2D_init();
 
     /* Insert your solution below */
     while (1) {
-	x = ADC;
-//	PORTB = (char)(x);
-//	PORTD = (char)(x >> 8);
-
-    	//btn = ~PINA & 0x0F;
-        Calculate();
-        state = Demo_Tick(state);
-
+        x = ADC;
+    	state = Falling_Object(state);
+	Joystick();
+    
         while(!TimerFlag);
-        TimerFlag = 0; 
+        TimerFlag = 0;
     }
-    return 1;
+    return 1; 
 }
+
+
