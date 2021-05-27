@@ -1,5 +1,8 @@
 
 
+
+
+
 /*    Author: lab
  *  Partner(s) Name:
  *    Lab Section:
@@ -77,20 +80,15 @@ unsigned char button;
 unsigned char btn;
 unsigned short x;
 
-unsigned long patterns[] = {0x02, '0x01', '0x04', '0x01', '0x02'};
-int pattern_i = 0;
-unsigned char pattern_count = 0;
-
-unsigned char s_row = 0xFE;
+int i = 0;
 
 enum Falling_States {shift};
 int Falling_Object(int state) {
-    
+
     // Local Variables
-    unsigned char pattern = patterns[pattern_i];        // LED pattern - 0: LED off; 1: LED on
+    static unsigned long patterns[] = {0x02, 0x80, 0x01};        // LED pattern - 0: LED off; 1: LED on
     static unsigned char row = 0xFE;    // Row(s) displaying pattern.
-                        
-    // 0: display pattern on row   $
+                                                        // 0: display pattern on row   $
     // Transitions
     switch (state) {
         case shift:
@@ -102,26 +100,22 @@ int Falling_Object(int state) {
     // Actions
     switch (state) {
         case shift:
-        // if row != last row, go to next row
-            if (s_row != 0xEF){
-                s_row = ~s_row;
-                s_row = s_row << 1;
-                s_row = ~s_row;
-
+	    // if row != last row, go to next row
+            if (row != 0xEF){
+                row = ~row;
+                row = row << 1;
+                row = ~row;
             } else {
                 row = 0xFE;
-                if(pattern_i == 5)
-                    pattern_i =0;
-                else
-                    pattern_i++;
-            }
+          	if(i<3){ i++; } else {i = 0;}
+	    }
             break;
 
         default:
             break;
     }
-    PORTC = pattern;    // Pattern to display
-    PORTD = s_row;                // Row(s) displaying pattern
+    PORTC = patterns[i];    // Pattern to display
+    PORTD = row;                // Row(s) displaying pattern
     return state;
 
 }
@@ -156,10 +150,10 @@ void Joystick(){
             }
             break;
 
-    // if left or right
+	// if left or right
         case Joystick_Right:
-        Joystick_State = Joystick_Wait;
-        break;
+	    Joystick_State = Joystick_Wait;
+	    break;
         case Joystick_Left:
             Joystick_State = Joystick_Wait;
             break;
@@ -174,14 +168,14 @@ void Joystick(){
         // Shift column to the right
         case Joystick_Right:
             if(set_pattern == 0x01 && button == 3)
-            set_pattern = 0x80;
+        	set_pattern = 0x80;
         else if(set_pattern != 0x01 && button == 3)
                 set_pattern = (set_pattern >> 1);
             break;
         // Shift column to the left
         case Joystick_Left:
             if (set_pattern == 0x80 && button == 4)
-            set_pattern = 0x01;
+        	set_pattern = 0x01;
         else if(set_pattern != 0x80 && button == 4)
                 set_pattern = (set_pattern << 1);
             break;
@@ -203,8 +197,8 @@ int main(void) {
     DDRD = 0xFF; PORTD = 0x00;
     DDRA = 0x00; PORTA = 0x0F;
 
-    //set_row = 0xFE;
-    //set_pattern = 0x80;
+    set_row = 0xFE;
+    set_pattern = 0x80;
     Joystick_State = Joystick_Start;
 
 
@@ -212,19 +206,20 @@ int main(void) {
 
     int state = 0;
 
-    TimerSet(500);
+    TimerSet(750);
     TimerOn();
     A2D_init();
 
     /* Insert your solution below */
     while (1) {
         x = ADC;
-        state = Falling_Object(state);
-        //Joystick();
+    	state = Falling_Object(state);
+	Joystick();
     
         while(!TimerFlag);
         TimerFlag = 0;
     }
-    return 1;
+    return 1; 
 }
+
 
