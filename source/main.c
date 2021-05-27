@@ -2,6 +2,7 @@
 
 
 
+
 /*    Author: lab
  *  Partner(s) Name:
  *    Lab Section:
@@ -125,8 +126,11 @@ int Falling_Object(int state) {
 //unsigned char set_row;
 enum Joystick_States {Joystick_Start, Joystick_Wait, Joystick_Right, Joystick_Left} Joystick_State;
 
+unsigned char set_pattern = 0xE0; // joystick pattern
+
 void Joystick(){
 
+    static unsigned char row = 0xEF;
     //x = ADC;
     // Transition
     switch(Joystick_State){
@@ -166,22 +170,24 @@ void Joystick(){
     switch(Joystick_State){
         // Shift column to the right
         case Joystick_Right:
-            if(set_pattern == 0x01 && button == 3)
-        	set_pattern = 0x80;
-        else if(set_pattern != 0x01 && button == 3)
+            if(set_pattern == 0x07 && button == 3)
+        	set_pattern = 0x07;
+            else if(set_pattern != 0x07 && button == 3)
                 set_pattern = (set_pattern >> 1);
             break;
         // Shift column to the left
         case Joystick_Left:
-            if (set_pattern == 0x80 && button == 4)
-        	set_pattern = 0x01;
-        else if(set_pattern != 0x80 && button == 4)
+            if (set_pattern == 0xE0 && button == 4)
+        	set_pattern = 0xE0;
+        else if(set_pattern != 0xE0 && button == 4)
                 set_pattern = (set_pattern << 1);
             break;
 
         default:
             break;
     }
+    PORTC = set_pattern;
+    PORTD = row;
 }
 
 void A2D_init() {
@@ -198,7 +204,7 @@ int main(void) {
     unsigned long Falling_Object_timer = 1500;
     
     set_row = 0xFE;
-    set_pattern = 0x80;
+    set_pattern = 0xE0;
     Joystick_State = Joystick_Start;
 
 
@@ -213,10 +219,10 @@ int main(void) {
     /* Insert your solution below */
     while (1) {
         x = ADC;
-        if(Falling_Object_timer >= 1500){
+        /*if(Falling_Object_timer >= 1500){
             state = Falling_Object(state);
             Falling_Object_timer = 0;
-        }
+        }*/
         Joystick();
 
         while(!TimerFlag);
