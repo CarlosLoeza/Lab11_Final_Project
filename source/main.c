@@ -86,7 +86,7 @@ enum Demo_States {shift};
 int Demo_Tick(int state) {
 
     // Local Variables
-    static unsigned char pattern = 0x80;        // LED pattern - 0: LED off; 1: LED on
+    static unsigned char pattern = 0xE0;        // LED pattern - 0: LED off; 1: LED on
     static unsigned char row = 0xFE;    // Row(s) displaying pattern. 
                                                         // 0: display pattern on row   $
     // Transitions
@@ -101,13 +101,13 @@ int Demo_Tick(int state) {
     switch (state) {
         case shift:     
             //pattern = set_pattern;
-            if (pattern == 0x01 && button == 3){
-                pattern = 0x80;
-            } else if (pattern != 0x01 && button == 3){
+            if (pattern == 0x07 && button == 3){
+                pattern = 0x07;
+            } else if (pattern != 0x07 && button == 3){
                 pattern = set_pattern;
-            } else if (pattern == 0x80 && button == 4){
-                pattern = 0x01;
-            } else if (pattern != 0x80 && button == 4){
+            } else if (pattern == 0xE0 && button == 4){
+                pattern = 0xE0;
+            } else if (pattern != 0xE0 && button == 4){
                 pattern = set_pattern;
             } 
             break;
@@ -166,16 +166,16 @@ void Calculate(){
         case Change_Wait:
             break;
         case Change_Right:
-            if(set_pattern == 0x01 && button == 3)
-		set_pattern = 0x80;
-	    else if(set_pattern != 0x01 && button == 3)
+            if(set_pattern == 0x07 && button == 3)
+		set_pattern = 0x07;
+	    else if(set_pattern != 0x07 && button == 3)
                 set_pattern = (set_pattern >> 1);
             break;
         // Shift column to the left
         case Change_Left:
-            if (set_pattern == 0x80 && button == 4)
-		set_pattern = 0x01;
-	    else if(set_pattern != 0x80 && button == 4)
+            if (set_pattern == 0xE0 && button == 4)
+		set_pattern = 0xE0;
+	    else if(set_pattern != 0xE0 && button == 4)
                 set_pattern = (set_pattern << 1);
             break;
 
@@ -197,7 +197,7 @@ int main(void) {
     DDRA = 0x00; PORTA = 0x0F;
 
     set_row = 0xFE;
-    set_pattern = 0x80;
+    set_pattern = 0xE0;
     Change_State = Change_Start;
 
     //static unsigned short x;
