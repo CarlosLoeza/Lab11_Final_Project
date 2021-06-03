@@ -1,5 +1,3 @@
-
-
 /*    Author: lab
  *  Partner(s) Name:
  *    Lab Section:
@@ -78,14 +76,19 @@ unsigned char btn;
 unsigned short x;
 
 int i = 0;
+unsigned char falling_row;
+unsigned char falling_pattern;
 
 enum Falling_States {shift};
 int Falling_Object(int state) {
+    
+    unsigned temp_falling_row = falling_row;
+    unsigned char temp_falling_pattern = falling_pattern; // joystick pattern
+
 
     // Local Variables
     static unsigned long patterns[] = {0x02, 0x80, 0x01};        // LED pattern - 0: LED off; 1: LED on
-    static unsigned char row = 0xFE;    // Row(s) displaying pattern.
-                                                        // 0: display pattern on row   $
+
     // Transitions
     switch (state) {
         case shift:
@@ -97,22 +100,23 @@ int Falling_Object(int state) {
     // Actions
     switch (state) {
         case shift:
-	    // if row != last row, go to next row
-            if (row != 0xEF){
-                row = ~row;
-                row = row << 1;
-                row = ~row;
+        // if row != last row, go to next row
+            if (temp_falling_row != 0xEF){
+                temp_falling_row = ~temp_falling_row;
+                temp_falling_row = temp_falling_row << 1;
+                temp_falling_row = ~temp_falling_row;
             } else {
-                row = 0xFE;
-          	if(i<3){ i++; } else {i = 0;}
-	    }
+                temp_falling_row = 0xFE;
+                if(i<3){ i++; } else {i = 0;}
+            }
             break;
 
         default:
             break;
     }
-    PORTC = patterns[i];    // Pattern to display
-    PORTD = row;                // Row(s) displaying pattern
+    
+    falling_pattern = patterns[i];
+    falling_row = temp_falling_row;
     return state;
 
 }
@@ -123,11 +127,13 @@ int Falling_Object(int state) {
 //unsigned char set_row;
 enum Joystick_States {Joystick_Start, Joystick_Wait, Joystick_Right, Joystick_Left} Joystick_State;
 
-unsigned char set_pattern = 0xE0; // joystick pattern
+unsigned joystick_row;
+unsigned char joystick_pattern; // joystick pattern
 
 void Joystick(){
 
-    static unsigned char row = 0xEF;
+    unsigned temp_joystick_row = joystick_row;
+    unsigned temp_joystick_pattern = joystick_pattern;
     //x = ADC;
     // Transition
     switch(Joystick_State){
@@ -150,16 +156,16 @@ void Joystick(){
             }
             break;
 
-	// if left or right
+    // if left or right
         case Joystick_Right:
-	    Joystick_State = Joystick_Wait;
-	    break;
+        Joystick_State = Joystick_Wait;
+        break;
         case Joystick_Left:
             Joystick_State = Joystick_Wait;
             break;
 
         default:
-            Joystick_State = Joystick_Wait;
+            Joystick_State = Joystick_Start;
             break;
     }
 
@@ -167,25 +173,58 @@ void Joystick(){
     switch(Joystick_State){
         // Shift column to the right
         case Joystick_Right:
-            if(set_pattern == 0x07 && button == 3)
-        	set_pattern = 0x07;
-            else if(set_pattern != 0x07 && button == 3)
-                set_pattern = (set_pattern >> 1);
+            if(temp_joystick_pattern == 0x07 && button == 3)
+                temp_joystick_pattern = 0x07;
+            else if(temp_joystick_pattern != 0x07 && button == 3)
+                temp_joystick_pattern = (temp_joystick_pattern >> 1);
             break;
         // Shift column to the left
         case Joystick_Left:
-            if (set_pattern == 0xE0 && button == 4)
-        	set_pattern = 0xE0;
-        else if(set_pattern != 0xE0 && button == 4)
-                set_pattern = (set_pattern << 1);
+            if (temp_joystick_pattern == 0xE0 && button == 4)
+                temp_joystick_pattern = 0xE0;
+            else if(joystick_pattern != 0xE0 && button == 4)
+                temp_joystick_pattern = (temp_joystick_pattern << 1);
             break;
 
         default:
             break;
     }
-    PORTC = set_pattern;
-    PORTD = row;
+    joystick_row = temp_joystick_row;
+    joystick_pattern = temp_joystick_pattern;
 }
+
+enum LED_States{LED_Start, LED_Falling_Object, LED_Joystick} LED_State;
+void LED_Display(){
+    
+    switch(LED_State){
+        case LED_Start:
+            LED_State = LED_Falling_Object;
+            break;
+        case LED_Falling_Object:
+            LED_State = LED_Joystick;
+            break;
+        case LED_Joystick:
+            LED_State = LED_Falling_Object;
+            break;
+        default:
+            LED_State = LED_Start;
+            break;
+        }
+
+        switch(LED_State){
+            case LED_Falling_Object:
+                PORTD = falling_row;
+		PORTC = falling_pattern;
+                break;
+            case LED_Joystick:
+//                PORTD = joystick_pattern;
+//		PORTC = joystick_row;
+                break;
+        }
+}
+    
+    
+
 
 void A2D_init() {
     ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
@@ -197,15 +236,18 @@ int main(void) {
     DDRC = 0xFF; PORTC = 0x00;
     DDRD = 0xFF; PORTD = 0x00;
 
-    unsigned long timer = 1;
+    unsigned long timer = 10;
     unsigned long Falling_Object_timer = 1500;
-    
-    set_row = 0xFE;
-    set_pattern = 0xE0;
+    unsigned char falling_row = 0xFE;    // Row(s) displaying pattern.
     
     Joystick_State = Joystick_Start;
+    joystick_row = 0xEF;
+    joystick_pattern = 0xE0;
     unsigned long Joystick_timer = 400;
+    
 
+    LED_State = LED_Start;
+    unsigned long LED_timer = 10;
     //static unsigned short x;
 
     int state = 0;
@@ -216,22 +258,27 @@ int main(void) {
 
     /* Insert your solution below */
     while (1) {
+        
         x = ADC;
-        if(Falling_Object_timer >= 1500){
+        if(Falling_Object_timer <= 1500){
             state = Falling_Object(state);
             Falling_Object_timer = 0;
         }
-        if(Joystick_timer >= 400){
-	    Joystick();
-	    Joystick_timer = 0;
+        if(Joystick_timer <= 400){
+            Joystick();
+            Joystick_timer = 0;
+        }
+        if(LED_timer <= 100){
+            LED_Display();
+	    LED_timer = 0;
 	}
         while(!TimerFlag);
         TimerFlag = 0;
         Falling_Object_timer += timer;
         Joystick_timer += timer;
+	LED_timer +=timer;
     }
     return 1;
     
 }
 
-    
