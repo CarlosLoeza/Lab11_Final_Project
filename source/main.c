@@ -209,7 +209,6 @@ void LED_Display(){
 
 
 
-
 int main(void) {
     DDRA = 0x00; PORTA = 0x0F;
     DDRC = 0xFF; PORTC = 0x00;
@@ -219,10 +218,10 @@ int main(void) {
     set_pattern = 0xE0;
 
     unsigned long timer = 10;
-    unsigned long Falling_Object_timer = 1500;
+    unsigned long Falling_Object_timer = 400;
 
     Joystick_State = Joystick_Start;
-    unsigned long Joystick_timer = 400;
+    unsigned long Joystick_timer = 100;
 
     //static unsigned short x;
     LED_State = LED_Start;
@@ -234,11 +233,11 @@ int main(void) {
     /* Insert your solution below */
     while (1) {
         x = ADC;
-        if(Falling_Object_timer >= 1500){
+        if(Falling_Object_timer >= 400){
             state = Falling_Object(state);
             Falling_Object_timer = 0;
         }
-        if(Joystick_timer >= 400){
+        if(Joystick_timer >= 100){
             Joystick();
             Joystick_timer = 0;
         }
