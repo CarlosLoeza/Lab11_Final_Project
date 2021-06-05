@@ -329,43 +329,130 @@ void Seven(){
 }
 
 
-
-enum Hello_States{Hello_Start, Hello_1, Hello_2, Hello_3} Hello_State;
-void Hello(){ 
-    switch(Hello_State){
-	case Hello_Start:
-	    Hello_State = Hello_1;
-	    break;
-	case Hello_1:
-	    Hello_State = Hello_2;
+// eight
+enum Eight_States {Eight_Start, Eight_col1, Eight_col2, Eight_col3} Eight_State;
+void Eight(){
+    switch(Eight_State){
+        case Eight_Start:
+            Eight_State = Eight_col1;
             break;
-	case Hello_2:
-	    Hello_State = Hello_3;
-	    break;
-	case Hello_3:
-	    Hello_State = Hello_1;
-	    break;
-	default:
-	    Hello_State = Hello_Start;
-	    break;
+        case Eight_col1:
+            Eight_State = Eight_col2;
+            break;
+        case Eight_col2:
+            Eight_State = Eight_col3;
+            break;
+        case Eight_col3:
+            Eight_State = Eight_col1;
+            break;
+        default:
+            Eight_State = Eight_Start;
+            break;
     }
-
-    switch(Hello_State){
-	case Hello_1:
-	    PORTC = 0x10;
-	    PORTD = 0x18;
-	    break;
-	case Hello_2:
-            PORTC = 0x08;
-	    PORTD = 0x1B;
+    
+    
+    switch(Eight_State){
+        case Eight_col1:
+            PORTC = 0x10;
+            PORTD = 0x00;
             break;
-	case Hello_3:
-	    PORTC = 0x04;
-	    PORTD = 0x00;
-	    break;
+        case Eight_col2:
+            PORTC = 0x08;
+            PORTD = 0x0A;
+            break;
+        case Eight_col3:
+            PORTC = 0x04;
+            PORTD = 0x00;
+            break;
     }
 }
 
+
+
+// nine
+enum Nine_States {Nine_Start, Nine_col1, Nine_col2, Nine_col3} Nine_State;
+void Nine(){
+    switch(Nine_State){
+        case Nine_Start:
+            Nine_State = Nine_col1;
+            break;
+        case Nine_col1:
+            Nine_State = Nine_col2;
+            break;
+        case Nine_col2:
+            Nine_State = Nine_col3;
+            break;
+        case Nine_col3:
+            Nine_State = Nine_col1;
+            break;
+        default:
+            Nine_State = Nine_Start;
+            break;
+    }
+    
+    
+    switch(Nine_State){
+        case Nine_col1:
+            PORTC = 0x10;
+            PORTD = 0x18;
+            break;
+        case Nine_col2:
+            PORTC = 0x08;
+            PORTD = 0x1A;
+            break;
+        case Nine_col3:
+            PORTC = 0x04;
+            PORTD = 0x00;
+            break;
+    }
+}
+
+
+
+// ten
+enum Ten_States {Ten_Start, Ten_col1, Ten_col2, Ten_col3, Ten_col4} Ten_State;
+void Ten(){
+    switch(Ten_State){
+        case Ten_Start:
+            Ten_State = Ten_col1;
+            break;
+        case Ten_col1:
+            Ten_State = Ten_col2;
+            break;
+        case Ten_col2:
+            Ten_State = Ten_col3;
+            break;
+        case Ten_col3:
+            Ten_State = Ten_col4;
+            break;
+        case Ten_col4:
+            Ten_State = Ten_col1;
+            break;
+        default:
+            Ten_State = Ten_Start;
+            break;
+    }
+    
+    
+    switch(Ten_State){
+        case Ten_col1:
+            PORTC = 0x20;
+            PORTD = 0x00;
+            break;
+        case Ten_col2:
+            PORTC = 0x08;
+            PORTD = 0x00;
+            break;
+        case Ten_col3:
+            PORTC = 0x04;
+            PORTD = 0x0E;
+            break;
+        case Ten_col4:
+            PORTC = 0x02;
+            PORTD = 0x00;
+            break;
+    }
+}
 
 int main(void) {
     /* Insert DDR and PORT initializations */
@@ -373,8 +460,8 @@ int main(void) {
     DDRC = 0xFF; PORTC = 0x00;
     DDRD = 0xFF; PORTD = 0x00;
     DDRA = 0x00; PORTA = 0x0F;
-    int count = 6;
-
+    int count = 1;
+    int loop_count = 2000;
     TimerSet(1);
     TimerOn();
     /* Insert your solution below */
@@ -384,7 +471,7 @@ int main(void) {
 	//state = Demo_Tick(state);
 	
 //	Hello();	
-
+	while(loop_count >=2000){
 	switch(count){
 	    case 1:
 		One();
@@ -407,7 +494,6 @@ int main(void) {
 	   case 7:
 		Seven();
 		break;
-/*
 	   case 8:
 		Eight();
 		break;
@@ -417,13 +503,15 @@ int main(void) {
 	   case 10:
 		Ten();
 		break;
-*/
 	   default:
 		break;
+	}
+
 	}
 	
 	while(!TimerFlag);
         TimerFlag = 0;
+	loop_count += 1;
     }
     return 1;
 }
