@@ -590,7 +590,7 @@ int main(void) {
 
     unsigned long Game_timer = 0;
     
-    int count = 3;
+    int count = 10;
     
          
     
