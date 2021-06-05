@@ -524,9 +524,8 @@ void Seven(){
  }
 
 
-
- // ten
- enum Ten_States {Ten_Start, Ten_col1, Ten_col2, Ten_col3, Ten_col4} Ten_State;
+// ten
+enum Ten_States {Ten_Start, Ten_col1, Ten_col2, Ten_col3, Ten_col4} Ten_State;
  void Ten(){
      switch(Ten_State){
          case Ten_Start:
@@ -570,6 +569,39 @@ void Seven(){
      }
  }
 
+int count;
+// checks if paddle caught object so we can increment score
+void Object_Caught(){
+    switch(falling_pattern){
+        case 0x01:
+            if(joystick_pattern == 0x07)
+                count++;
+        case 0x02:
+            if(joystick_pattern == 0x07 || joystick_pattern == 0x0E)
+                count++;
+        case 0x04:
+            if(joystick_pattern == 0x07 || joystick_pattern == 0x0E || joystick_pattern == 0x1C)
+                count++;
+        case 0x08:
+            if(joystick_pattern == 0x07 || joystick_pattern == 0x0E || joystick_pattern == 0x38)
+                count++;
+        case 0x10:
+            if(joystick_pattern ==  0x0E || joystick_pattern == 0x38 || joystick_pattern == 0x70)
+                count++;
+        case 0x20:
+            if(joystick_pattern == 0x38 || joystick_pattern == 0x70 || joystick_pattern == 0xE0)
+                count++;
+        case 0x40:
+            if(joystick_pattern == 0x38 || joystick_pattern == 0x70 || joystick_pattern == 0xE0)
+                count++;
+        case 0x80:
+            if(joystick_pattern == 0xE0)
+                count++;
+    }
+    
+}
+
+
 
 int main(void) {
     DDRA = 0x00; PORTA = 0x0F;
@@ -590,7 +622,8 @@ int main(void) {
 
     unsigned long Game_timer = 0;
     
-    int count = 10;
+    unsigned Object_Caught_timer = 2000;
+    count = 3;
     
          
     
@@ -610,49 +643,55 @@ int main(void) {
                 Joystick();
                 Joystick_timer = 0;
             }
+            if(Object_Caught_timer >= 2000){
+                Object_Caught();
+                Object_Caught_timer = 0;
+                
+            }
             LED_Display();
             
             while(!TimerFlag);
             TimerFlag = 0;
             Falling_Object_timer += timer;
             Joystick_timer += timer;
-	    Game_timer += timer;
+            Game_timer += timer;
+            Object_Caught_timer += timer;
         }
 
         switch(count){
- 	    case 1:
- 		One();
-		break;
-	    case 2:
-		Two();
-		break;
-	    case 3:
-		Three();
-		break;
-	    case 4:
-		Four();
-		break;
-	   case 5:
-		Five();
-		break;
-	   case 6:
-		Six();
-		break;
- 	   case 7:
- 		Seven();
- 		break;
- 	   case 8:
- 		Eight();
- 		break;
-	   case 9:
-		Nine();
-		break;
- 	   case 10:
- 		Ten();
- 		break;
- 	   default:
- 		break;
- 	}   
+            case 1:
+            One();
+            break;
+        case 2:
+            Two();
+            break;
+        case 3:
+            Three();
+            break;
+        case 4:
+            Four();
+            break;
+       case 5:
+            Five();
+            break;
+       case 6:
+            Six();
+            break;
+       case 7:
+            Seven();
+            break;
+       case 8:
+            Eight();
+            break;
+       case 9:
+           Nine();
+           break;
+       case 10:
+           Ten();
+           break;
+       default:
+           break;
+     }
 
         
     }
