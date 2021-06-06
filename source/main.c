@@ -1,3 +1,18 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*    Author: lab
   *  Partner(s) Name:
   *    Lab Section:
@@ -67,13 +82,13 @@
  enum Falling_States {shift};
  int Falling_Object(int state) {
      // Local Variables
-     static unsigned long patterns[] = {0x02, 0x80, 0x01, 0x10};        // LED pattern - 0: LED off; 1: LED on
+     static unsigned long patterns[] = {0x02, 0x02, 0x02, 0x02};        // LED pattern - 0: LED off; 1: LED on
      static unsigned char row = 0xFE;    // Row(s) displaying pattern.
                                                           // 0: display pattern on row   $
      // Transitions
      switch (state) {
          case shift:
-//             state = shift;
+             state = shift;
              break;
          default:
              state = shift;
@@ -202,6 +217,44 @@
      }
 
  }
+
+// zero
+enum Zero_States {Zero_Start, Zero_col1, Zero_col2, Zero_col3} Zero_State;
+void Zero(){
+    switch(Zero_State){
+        case Zero_Start:
+            Zero_State = Zero_col1;
+            break;
+        case Zero_col1:
+            Zero_State = Zero_col2;
+            break;
+        case Zero_col2:
+            Zero_State = Zero_col3;
+            break;
+        case Zero_col3:
+            Zero_State = Zero_col1;
+            break;
+        default:
+            Zero_State = Zero_Start;
+            break;
+    }
+
+
+    switch(Zero_State){
+        case Zero_col1:
+            PORTC = 0x20;
+            PORTD = 0x00;
+            break;
+        case Zero_col2:
+            PORTC = 0x10;
+            PORTD = 0x0E;
+            break;
+        case Zero_col3:
+            PORTC = 0x08;
+            PORTD = 0x00;
+            break;
+    }
+}
 
 
  // one
@@ -516,7 +569,7 @@ void One(){
               PORTC = 0x08;
               PORTD = 0x1A;
               break;
-          case Nine_col3:
+           case Nine_col3:
               PORTC = 0x04;
               PORTD = 0x00;
               break;
@@ -574,41 +627,42 @@ int count;
 // checks if paddle caught object so we can increment score
 void Object_Caught(){
     switch(falling_pattern){
-        case 0x01:
-            if(joystick_pattern == 0x07)
-                count++;
-    	    break; 
-       case 0x02:
-            if(joystick_pattern == 0x07 || joystick_pattern == 0x0E)
-                count++;
-	    break;
-        case 0x04:
-            if(joystick_pattern == 0x07 || joystick_pattern == 0x0E || joystick_pattern == 0x1C)
-                count++;
-	    break;
-        case 0x08:
-            if(joystick_pattern == 0x07 || joystick_pattern == 0x0E || joystick_pattern == 0x38)
-                count++;
-	    break;
-        case 0x10:
-            if(joystick_pattern ==  0x0E || joystick_pattern == 0x38 || joystick_pattern == 0x70)
-                count++;
-	    break;
-        case 0x20:
-            if(joystick_pattern == 0x38 || joystick_pattern == 0x70 || joystick_pattern == 0xE0)
-                count++;
-   	    break;
-        case 0x40:
-            if(joystick_pattern == 0x38 || joystick_pattern == 0x70 || joystick_pattern == 0xE0)
-                count++;
-	    break;
-        case 0x80:
-            if(joystick_pattern == 0xE0)
-                count++;
-	    break;
-	default:
-	    count = count;
-	    break;
+		case 0x01:
+            	    if(joystick_pattern == 0x07)
+                    count++;
+    	            break; 
+            	case 0x02:
+                    if(joystick_pattern == 0x07 || joystick_pattern == 0x0E)
+                    count++;
+	    	    break;
+       		case 0x04:
+           	     if(joystick_pattern == 0x07 || joystick_pattern == 0x0E || joystick_pattern == 0x1C)
+                     count++;
+	    	     break;
+        	case 0x08:
+            	    if(joystick_pattern == 0x0E || joystick_pattern == 0x1C || joystick_pattern == 0x38)
+                    count++;
+	   	    break;
+       		case 0x10:
+            	    if(joystick_pattern ==  0x1C || joystick_pattern == 0x38 || joystick_pattern == 0x70)
+                    count++;
+	    	    break;
+        	case 0x20:
+            	    if(joystick_pattern == 0x38 || joystick_pattern == 0x70 || joystick_pattern == 0xE0)
+                    count++;
+   	    	    break;
+        	case 0x40:
+           	    if(joystick_pattern == 0x70 || joystick_pattern == 0xE0)
+                    count++;
+	    	    break;
+        	case 0x80:
+            	    if(joystick_pattern == 0xE0)
+                    count++;
+	    	    break;
+		default:
+	    	    count = count;
+	    	    break;
+	   
     }
 
 }
@@ -633,9 +687,9 @@ void Object_Caught(){
 
      unsigned long Game_timer = 0;
      
-     unsigned long Object_Caught_timer = 2400;
+     unsigned long Object_Caught_timer = 2000;
 
-     count = 1;
+     count = 0;
 
 
 
@@ -645,9 +699,9 @@ void Object_Caught(){
      A2D_init();
      /* Insert your solution below */
      while (1) {
-         while(Game_timer <= 19600){
+         while(Game_timer <= 24000){
              x = ADC;
-             if(Falling_Object_timer >= 400){
+           if(Falling_Object_timer >= 400){
                  state = Falling_Object(state);
                  Falling_Object_timer = 0;
              }
@@ -658,7 +712,7 @@ void Object_Caught(){
              }
                  
              LED_Display();
-	     if(Object_Caught_timer >= 2400){
+	     if(Object_Caught_timer >= 2000){
 	     	Object_Caught();
 		Object_Caught_timer = 0;
 	     }
@@ -672,7 +726,10 @@ void Object_Caught(){
         }
 
         switch(count){
-            case 1:
+	   case 0:
+		Zero();
+		break; 
+           case 1:
                 One();
                 break;
             case 2:
@@ -684,27 +741,27 @@ void Object_Caught(){
             case 4:
                 Four();
                 break;
-       case 5:
-        Five();
-        break;
-        case 6:
-         Six();
-         break;
-         case 7:
-          Seven();
-          break;
-         case 8:
-          Eight();
-          break;
-        case 9:
-         Nine();
-         break;
-         case 10:
-          Ten();
-          break;
-         default:
-          break;
-      }
+            case 5:
+                Five();
+        	break;
+            case 6:
+         	Six();
+         	break;
+            case 7:
+                Seven();
+          	break;
+            case 8:
+          	Eight();
+          	break;
+            case 9:
+         	Nine();
+         	break;
+            case 10:
+         	Ten();
+          	break;
+            default:
+          	break;
+          }
 
 
      }
