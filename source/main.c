@@ -6,28 +6,36 @@
 
 
 
-
-
-
-
-
-
-
-
 /*    Author: lab
   *  Partner(s) Name:
   *    Lab Section:
   *    Assignment: Lab #  Exercise #
   *    Exercise Description: [optional - include for your own benefit]
   *
+	VIDEOS:
+	// ZERO SCORE
+	https://www.youtube.com/watch?v=_zgUeLxDxXc
+
+	// REGULAR GAMEPLAY
+	https://www.youtube.com/watch?v=svo-nw5K4lU
+
   *    I acknowledge all content contained herein, excluding template or example
   *    code, is my own original work.
   */
+
+
+/*
+	MY GAME CATCHES FALLING OBJECTS AND DISPLAYS THE SCORE AND THE END OF THE GAME.
+
+*/
+
  #include <avr/io.h>
  #include <avr/interrupt.h>
  #ifdef _SIMULATE_
  #include "simAVRHeader.h"
  #endif
+
+
  volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programme$
  // Internal variables for mapping AVR's ISR to our cleaner TimerISR model.
  unsigned long _avr_timer_M = 1; // Start counter from here to 0. Default 1ms
@@ -73,10 +81,12 @@
      _avr_timer_cntcurr =  _avr_timer_M;
  }
 
+
+// SM which creates and moves the falling objects
  unsigned char button;
  unsigned char btn;
  unsigned short x;
- int i = 0;
+ int j = 0;
  unsigned char falling_pattern;
  unsigned char falling_row;
 
@@ -105,18 +115,20 @@
                  row = ~row;
              } else {
                  row = 0xFE;
-             if(i<3){ i++; } else {i = 0;}
+             if(j<3){ j++; } else {j = 0;}
              }
              break;
          default:
              break;
      }
-     falling_pattern = patterns[i];    // Pattern to display
+     // Update pattern and row of the falling object
+     falling_pattern = patterns[j];    // Pattern to display
      falling_row = row;                // Row(s) displaying pattern
      return state;
  }
 
 
+// SM that controls the joystick of our game. Joystick controls paddle that catches falling objects
  unsigned char set_row;
  unsigned char set_pattern;
  unsigned char joystick_pattern;
@@ -163,7 +175,7 @@
          // Shift column to the right
          case Joystick_Right:
              if(set_pattern == 0x07 && button == 3)
-             set_pattern = 0x07;
+                 set_pattern = 0x07;
              else if(set_pattern != 0x07 && button == 3)
                  set_pattern = (set_pattern >> 1);
              break;
@@ -178,7 +190,7 @@
              break;
       }
       joystick_pattern = set_pattern;
-      joystick_row = set_row;
+      joystick_row = row;
 
   }
 
@@ -187,7 +199,7 @@
      ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
  }
 
-
+// Displays the falling object and paddle at the same time
  enum LED_States{LED_Start, LED_Falling_Object, LED_Joystick} LED_State;
  void LED_Display(){
 
@@ -202,7 +214,7 @@
              LED_State = LED_Falling_Object;
              break;
          default:
-             LED_State = LED_Start;
+             LED_State = LED_Falling_Object;
              break;
      }
 
@@ -218,6 +230,8 @@
      }
 
  }
+
+// The next SM's are used to show the score
 
 // zero
 enum Zero_States {Zero_Start, Zero_col1, Zero_col2, Zero_col3} Zero_State;
@@ -681,14 +695,14 @@ void Object_Caught(){
      falling_row = 0xFE;
 
      Joystick_State = Joystick_Start;
-     unsigned long Joystick_timer = 200;
+     unsigned long Joystick_timer = 100;
 
      //static unsigned short x;
      LED_State = LED_Start;
 
      unsigned long Game_timer = 0;
      
-     unsigned long Object_Caught_timer = 2000;
+     unsigned long Object_Caught_timer = 0;
 
      count = 0;
 
@@ -700,16 +714,18 @@ void Object_Caught(){
      A2D_init();
      /* Insert your solution below */
      while (1) {
-         while(Game_timer <= 24000){
+	// loop while game is not over
+         while(Game_timer <= 20000){
              x = ADC;
+
+	   if(Joystick_timer >= 100){
+                 Joystick();
+                 Joystick_timer = 0;
+           }
+
            if(Falling_Object_timer >= 400){
                  state = Falling_Object(state);
                  Falling_Object_timer = 0;
-             }
-             if(Joystick_timer >= 200){
-                 Joystick();
-	//	 Object_Caught();
-                 Joystick_timer = 0;
              }
                  
              LED_Display();
@@ -725,7 +741,7 @@ void Object_Caught(){
              Game_timer += timer;
              Object_Caught_timer += timer;
         }
-
+	// Show score once game is over
         switch(count){
 	   case 0:
 		Zero();
