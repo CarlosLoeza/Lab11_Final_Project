@@ -1,0 +1,17 @@
+For my Intro to Embedded Systems Final (EE120B @ UC Riverside), I built Atari's Avalanche arcade game using hardware and software (C language). 
+Avalanche Gameplay Video: https://www.youtube.com/watch?v=0VDvRlNuaX4
+
+To build the hardware, I used:
+- A breadboard consisting of an LED Matrix to display the falling objects and a moving paddle on the bottom to catch the objects. 
+- Joystick to control the movements of the paddle (Left or right).
+- Atmega1284p chip performs the actions provided by the software/code. Ex: if joystick is moved to the left, slide paddle left on the LED matrix.
+
+
+To build the software:
+
+
+
+
+
+
+
